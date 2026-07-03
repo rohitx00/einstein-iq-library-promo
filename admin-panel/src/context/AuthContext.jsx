@@ -1,48 +1,53 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
+import api from '../services/api';
 
-const AuthContext = createContext(undefined);
+const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [admin, setAdmin] = useState(null);
+  const [loading, setLoading] = useState(true);
 
+  // Check auth status on mount
   useEffect(() => {
-    // Check local storage for session
-    const session = localStorage.getItem('admin_session');
-    if (session) {
-      setIsAuthenticated(true);
-    }
-    setIsLoading(false);
+    const checkAuth = async () => {
+      try {
+        const { data } = await api.get('/auth/me');
+        setAdmin(data.data);
+      } catch (error) {
+        setAdmin(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    checkAuth();
   }, []);
 
-  const login = async (email, password) => {
-    // MOCK LOGIN: Accepts any credentials for development.
-    // In production, this will be replaced with an actual API call.
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        localStorage.setItem('admin_session', 'mock_token');
-        setIsAuthenticated(true);
-        resolve(true);
-      }, 800);
-    });
+  // Listen for unauthorized events to automatically logout
+  useEffect(() => {
+    const handleUnauthorized = () => setAdmin(null);
+    window.addEventListener('unauthorized', handleUnauthorized);
+    return () => window.removeEventListener('unauthorized', handleUnauthorized);
+  }, []);
+
+  const login = async (credentials) => {
+    const { data } = await api.post('/auth/login', credentials);
+    setAdmin(data.data);
+    return data;
   };
 
-  const logout = () => {
-    localStorage.removeItem('admin_session');
-    setIsAuthenticated(false);
+  const logout = async () => {
+    try {
+      await api.post('/auth/logout');
+    } finally {
+      setAdmin(null);
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ admin, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
+export const useAuth = () => useContext(AuthContext);

@@ -5,16 +5,7 @@ import { Header } from '../components/Header';
 import { useAuth } from '../context/AuthContext';
 
 export const AdminLayout = () => {
-  const { isAuthenticated, isLoading } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-  if (isLoading) {
-    return <div className="min-h-screen bg-slate-50 flex items-center justify-center">Loading...</div>;
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
 
   return (
     <div className="min-h-screen bg-slate-50 flex">

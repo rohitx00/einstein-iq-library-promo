@@ -5,17 +5,28 @@ import gsap from 'gsap';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Container } from '../components/Container';
-import heroImage from '../assets/hero.png';
+import { useQuery } from '@tanstack/react-query';
+import api from '../services/api';
+import defaultHeroImage from '../assets/hero.png';
 
 export const Hero = () => {
   const containerRef = useRef(null);
   const textRef = useRef(null);
   
+  const { data: heroData, isLoading } = useQuery({
+    queryKey: ['hero'],
+    queryFn: async () => {
+      const response = await api.get('/hero');
+      return response.data.data;
+    }
+  });
+
   const { scrollY } = useScroll();
   const y = useTransform(scrollY, [0, 1000], [0, 400]);
   const opacity = useTransform(scrollY, [0, 600], [1, 0]);
 
   useEffect(() => {
+    if (isLoading) return;
     // GSAP Animation for complex reveal
     const ctx = gsap.context(() => {
       gsap.from('.hero-word', {
@@ -29,7 +40,35 @@ export const Hero = () => {
     }, containerRef);
 
     return () => ctx.revert();
-  }, []);
+  }, [isLoading, heroData]);
+
+  const renderHeading = (heading) => {
+    if (!heading) return null;
+    const words = heading.split(' ');
+    // Split into roughly two lines
+    const mid = Math.ceil(words.length / 2);
+    const line1 = words.slice(0, mid);
+    const line2 = words.slice(mid);
+
+    return (
+      <>
+        <div className="overflow-hidden">
+          {line1.map((word, i) => (
+            <span key={i} className="hero-word inline-block mr-3 md:mr-5">{word}</span>
+          ))}
+        </div>
+        <div className="overflow-hidden text-[var(--color-accent)] mt-2">
+          {line2.map((word, i) => (
+            <span key={i} className="hero-word inline-block mr-3 md:mr-5">{word}</span>
+          ))}
+        </div>
+      </>
+    );
+  };
+
+  const bgImage = heroData?.backgroundImage || defaultHeroImage;
+  const headingText = heroData?.heading || "The Premium Space For Deep Focus.";
+  const subheadingText = heroData?.subheading || "Elevate your academic and professional journey in a silent, air-conditioned environment designed for unparalleled productivity.";
 
   return (
     <section ref={containerRef} className="relative h-[100dvh] w-full flex items-center justify-center overflow-hidden bg-[var(--color-primary)]">
@@ -40,7 +79,7 @@ export const Hero = () => {
       >
         <div className="absolute inset-0 bg-[var(--color-primary)]/60 z-10" />
         <img 
-          src={heroImage} 
+          src={bgImage} 
           alt="Premium Library"
           className="w-full h-full object-cover scale-110"
         />
@@ -59,16 +98,7 @@ export const Hero = () => {
           </motion.div>
 
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold font-heading text-white leading-[1.1] tracking-tight mb-8 overflow-hidden text-center">
-            <div className="overflow-hidden">
-              <span className="hero-word inline-block mr-3 md:mr-5">The</span>
-              <span className="hero-word inline-block mr-3 md:mr-5">Premium</span>
-              <span className="hero-word inline-block">Space</span>
-            </div>
-            <div className="overflow-hidden text-[var(--color-accent)] mt-2">
-              <span className="hero-word inline-block mr-3 md:mr-5">For</span>
-              <span className="hero-word inline-block mr-3 md:mr-5">Deep</span>
-              <span className="hero-word inline-block">Focus.</span>
-            </div>
+            {renderHeading(headingText)}
           </h1>
 
           <motion.p
@@ -77,7 +107,7 @@ export const Hero = () => {
             transition={{ duration: 0.8, delay: 0.8 }}
             className="text-lg md:text-2xl text-gray-300 max-w-2xl mx-auto mb-12 leading-relaxed"
           >
-            Elevate your academic and professional journey in a silent, air-conditioned environment designed for unparalleled productivity.
+            {subheadingText}
           </motion.p>
 
           <motion.div
@@ -91,7 +121,6 @@ export const Hero = () => {
                 Explore Memberships <ArrowRight size={20} />
               </Button>
             </NavLink>
-
           </motion.div>
         </div>
       </Container>

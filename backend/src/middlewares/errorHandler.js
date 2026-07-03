@@ -21,7 +21,7 @@ export const errorHandler = (err, req, res, next) => {
     return res.status(statusCode).json({
       success: false,
       message,
-      errors: err.errors.map(e => ({ path: e.path.join('.'), message: e.message }))
+      errors: (err.errors || err.issues || []).map(e => ({ path: e.path ? e.path.join('.') : '', message: e.message }))
     });
   }
 

@@ -1,5 +1,5 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { AdminLayout } from './layouts/AdminLayout';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
@@ -9,6 +9,10 @@ import { FacilitiesManagement } from './pages/FacilitiesManagement';
 import { PlansManagement } from './pages/PlansManagement';
 import { GalleryManagement } from './pages/GalleryManagement';
 import { TestimonialsManagement } from './pages/TestimonialsManagement';
+import { RulesManagement } from './pages/RulesManagement';
+import { FaqsManagement } from './pages/FaqsManagement';
+import { MessagesManagement } from './pages/MessagesManagement';
+import { ContactInfoManagement } from './pages/ContactInfoManagement';
 
 // Placeholder components for routing
 const Placeholder = ({ title }) => (
@@ -18,6 +22,25 @@ const Placeholder = ({ title }) => (
   </div>
 );
 
+const ProtectedRoute = ({ children }) => {
+  const { admin, loading } = useAuth();
+  const location = useLocation();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900"></div>
+      </div>
+    );
+  }
+
+  if (!admin) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  return children;
+};
+
 function App() {
   return (
     <AuthProvider>
@@ -25,7 +48,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           
-          <Route path="/" element={<AdminLayout />}>
+          <Route path="/" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
             <Route index element={<Dashboard />} />
             <Route path="hero" element={<HeroManagement />} />
             <Route path="about" element={<AboutManagement />} />
@@ -33,10 +56,10 @@ function App() {
             <Route path="plans" element={<PlansManagement />} />
             <Route path="gallery" element={<GalleryManagement />} />
             <Route path="testimonials" element={<TestimonialsManagement />} />
-            <Route path="rules" element={<Placeholder title="Library Rules" />} />
-            <Route path="faqs" element={<Placeholder title="FAQs" />} />
-            <Route path="contact-info" element={<Placeholder title="Contact Info" />} />
-            <Route path="messages" element={<Placeholder title="Messages" />} />
+            <Route path="rules" element={<RulesManagement />} />
+            <Route path="faqs" element={<FaqsManagement />} />
+            <Route path="contact-info" element={<ContactInfoManagement />} />
+            <Route path="messages" element={<MessagesManagement />} />
             <Route path="settings" element={<Placeholder title="Settings" />} />
           </Route>
           

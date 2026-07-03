@@ -1,44 +1,106 @@
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { Upload, Trash2, Image as ImageIcon } from 'lucide-react';
-
-const initialGallery = [
-  { id: 1, url: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d', title: 'Main Reading Room', category: 'Study Areas' },
-  { id: 2, url: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f', title: 'Silent Zone', category: 'Study Areas' },
-  { id: 3, url: 'https://images.unsplash.com/photo-1497366216548-37526070297c', title: 'Conference Room', category: 'Meeting Rooms' },
-  { id: 4, url: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d', title: 'Coffee Lounge', category: 'Amenities' },
-];
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import api from '../services/api';
 
 export const GalleryManagement = () => {
-  const [images, setImages] = useState(initialGallery);
+  const queryClient = useQueryClient();
   const [isUploading, setIsUploading] = useState(false);
 
-  const handleFileUpload = (e) => {
+  const { data: images = [], isLoading } = useQuery({
+    queryKey: ['gallery'],
+    queryFn: async () => {
+      const response = await api.get('/gallery');
+      return response.data.data;
+    }
+  });
+
+  const uploadMutation = useMutation({
+    mutationFn: async (file) => {
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('title', file.name.split('.')[0]);
+      formData.append('category', 'Uncategorized');
+      
+      const response = await api.post('/gallery', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['gallery'] });
+    },
+    onError: (error) => toast.error(error.response?.data?.message || 'Failed to upload image')
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, data }) => {
+      const response = await api.put(`/gallery/${id}`, data);
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success('Image details updated');
+      queryClient.invalidateQueries({ queryKey: ['gallery'] });
+    },
+    onError: (error) => toast.error(error.response?.data?.message || 'Failed to update image')
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id) => {
+      await api.delete(`/gallery/${id}`);
+    },
+    onSuccess: () => {
+      toast.success('Image deleted');
+      queryClient.invalidateQueries({ queryKey: ['gallery'] });
+    },
+    onError: (error) => toast.error(error.response?.data?.message || 'Failed to delete image')
+  });
+
+  const handleFileUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
 
     setIsUploading(true);
-    // Simulate upload delay
-    setTimeout(() => {
-      const newImages = files.map((file, index) => ({
-        id: Date.now() + index,
-        url: URL.createObjectURL(file),
-        title: file.name.split('.')[0], // Use filename as default title
-        category: 'Uncategorized',
-      }));
-      
-      setImages([...newImages, ...images]);
-      setIsUploading(false);
-      toast.success(`${files.length} image(s) uploaded successfully`);
-    }, 1500);
+    let successCount = 0;
+    
+    for (const file of files) {
+      try {
+        await uploadMutation.mutateAsync(file);
+        successCount++;
+      } catch (error) {
+        // error handled in mutation
+      }
+    }
+    
+    setIsUploading(false);
+    if (successCount > 0) {
+      toast.success(`${successCount} image(s) uploaded successfully`);
+    }
+    // reset file input
+    e.target.value = '';
   };
 
   const handleDelete = (id) => {
     if (window.confirm('Are you sure you want to delete this image?')) {
-      setImages(images.filter(img => img.id !== id));
-      toast.success('Image deleted');
+      deleteMutation.mutate(id);
     }
   };
+
+  const handleUpdate = (id, field, value) => {
+    const image = images.find(img => img.id === id);
+    if (image && image[field] !== value) {
+      updateMutation.mutate({ id, data: { [field]: value } });
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -48,7 +110,7 @@ export const GalleryManagement = () => {
           <p className="text-slate-500 mt-1">Upload and manage images for the library gallery.</p>
         </div>
         
-        <label className="bg-slate-900 text-white px-4 py-2.5 rounded-lg flex items-center justify-center gap-2 hover:bg-slate-800 transition-colors cursor-pointer">
+        <label className={`bg-slate-900 text-white px-4 py-2.5 rounded-lg flex items-center justify-center gap-2 hover:bg-slate-800 transition-colors ${isUploading ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}>
           <Upload size={18} /> 
           {isUploading ? 'Uploading...' : 'Upload Images'}
           <input type="file" multiple accept="image/*" className="hidden" onChange={handleFileUpload} disabled={isUploading} />
@@ -59,11 +121,12 @@ export const GalleryManagement = () => {
         {images.map((img) => (
           <div key={img.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden group">
             <div className="aspect-[4/3] relative overflow-hidden bg-slate-100">
-              <img src={img.url} alt={img.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+              <img src={img.imageUrl} alt={img.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
               <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                 <button 
                   onClick={() => handleDelete(img.id)}
-                  className="bg-white text-red-600 p-2 rounded-full hover:bg-red-50 transition-colors shadow-lg"
+                  disabled={deleteMutation.isPending}
+                  className="bg-white text-red-600 p-2 rounded-full hover:bg-red-50 transition-colors shadow-lg disabled:opacity-50"
                 >
                   <Trash2 size={20} />
                 </button>
@@ -74,17 +137,19 @@ export const GalleryManagement = () => {
                 type="text" 
                 defaultValue={img.title} 
                 className="font-medium text-slate-900 w-full focus:outline-none focus:ring-2 focus:ring-slate-900 rounded px-1 -mx-1"
-                onBlur={(e) => {
-                  toast.success('Title updated');
-                }}
+                onBlur={(e) => handleUpdate(img.id, 'title', e.target.value)}
               />
               <div className="flex items-center gap-1 mt-1 text-xs text-slate-500">
                 <ImageIcon size={14} />
-                <select className="bg-transparent focus:outline-none cursor-pointer hover:text-slate-700">
-                  <option>Study Areas</option>
-                  <option>Meeting Rooms</option>
-                  <option>Amenities</option>
-                  <option>Uncategorized</option>
+                <select 
+                  className="bg-transparent focus:outline-none cursor-pointer hover:text-slate-700 w-full"
+                  defaultValue={img.category}
+                  onChange={(e) => handleUpdate(img.id, 'category', e.target.value)}
+                >
+                  <option value="Study Areas">Study Areas</option>
+                  <option value="Meeting Rooms">Meeting Rooms</option>
+                  <option value="Amenities">Amenities</option>
+                  <option value="Uncategorized">Uncategorized</option>
                 </select>
               </div>
             </div>

@@ -4,9 +4,18 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Container } from '../components/Container';
 import { SectionTitle } from '../components/SectionTitle';
 import { TestimonialCard } from '../components/TestimonialCard';
-import { testimonials } from '../data/mockData';
+import { useQuery } from '@tanstack/react-query';
+import api from '../services/api';
 
 export const TestimonialsSection = () => {
+  const { data: testimonials = [], isLoading } = useQuery({
+    queryKey: ['testimonials'],
+    queryFn: async () => {
+      const response = await api.get('/testimonials');
+      return response.data.data;
+    }
+  });
+
   const [emblaRef, emblaApi] = useEmblaCarousel({ 
     align: 'start',
     loop: true,
@@ -43,40 +52,52 @@ export const TestimonialsSection = () => {
         description="Discover how Einstein IQ has transformed the study habits and academic performance of our community."
       />
       
-      <div className="relative max-w-[100vw] sm:max-w-none">
-        <div className="overflow-hidden" ref={emblaRef}>
-          <div className="flex -ml-4">
-            {testimonials.map((testimonial) => (
-              <div 
-                key={testimonial.id} 
-                className="flex-[0_0_100%] min-w-0 pl-4 md:flex-[0_0_50%] lg:flex-[0_0_33.333%]"
-              >
-                <TestimonialCard {...testimonial} />
-              </div>
-            ))}
+      {isLoading ? (
+        <div className="flex justify-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-primary)]"></div>
+        </div>
+      ) : (
+        <div className="relative max-w-[100vw] sm:max-w-none mt-8">
+          <div className="overflow-hidden" ref={emblaRef}>
+            <div className="flex -ml-4">
+              {testimonials.map((testimonial) => (
+                <div 
+                  key={testimonial.id} 
+                  className="flex-[0_0_100%] min-w-0 pl-4 md:flex-[0_0_50%] lg:flex-[0_0_33.333%]"
+                >
+                  <TestimonialCard 
+                    name={testimonial.name}
+                    occupation={testimonial.occupation}
+                    review={testimonial.review}
+                    rating={testimonial.rating}
+                    image={testimonial.imageUrl}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Navigation Buttons */}
+          <div className="flex justify-center gap-4 mt-8">
+            <button
+              onClick={scrollPrev}
+              disabled={!prevBtnEnabled}
+              className="w-12 h-12 rounded-full border-2 border-[var(--color-border)] flex items-center justify-center text-[var(--color-text-secondary)] hover:bg-[var(--color-primary)] hover:border-[var(--color-primary)] hover:text-[var(--color-surface)] disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:border-[var(--color-border)] disabled:hover:text-[var(--color-text-secondary)] transition-colors"
+              aria-label="Previous slide"
+            >
+              <ChevronLeft size={24} />
+            </button>
+            <button
+              onClick={scrollNext}
+              disabled={!nextBtnEnabled}
+              className="w-12 h-12 rounded-full border-2 border-[var(--color-border)] flex items-center justify-center text-[var(--color-text-secondary)] hover:bg-[var(--color-primary)] hover:border-[var(--color-primary)] hover:text-[var(--color-surface)] disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:border-[var(--color-border)] disabled:hover:text-[var(--color-text-secondary)] transition-colors"
+              aria-label="Next slide"
+            >
+              <ChevronRight size={24} />
+            </button>
           </div>
         </div>
-
-        {/* Navigation Buttons */}
-        <div className="flex justify-center gap-4 mt-8">
-          <button
-            onClick={scrollPrev}
-            disabled={!prevBtnEnabled}
-            className="w-12 h-12 rounded-full border-2 border-[var(--color-border)] flex items-center justify-center text-[var(--color-text-secondary)] hover:bg-[var(--color-primary)] hover:border-[var(--color-primary)] hover:text-[var(--color-surface)] disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:border-[var(--color-border)] disabled:hover:text-[var(--color-text-secondary)] transition-colors"
-            aria-label="Previous slide"
-          >
-            <ChevronLeft size={24} />
-          </button>
-          <button
-            onClick={scrollNext}
-            disabled={!nextBtnEnabled}
-            className="w-12 h-12 rounded-full border-2 border-[var(--color-border)] flex items-center justify-center text-[var(--color-text-secondary)] hover:bg-[var(--color-primary)] hover:border-[var(--color-primary)] hover:text-[var(--color-surface)] disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:border-[var(--color-border)] disabled:hover:text-[var(--color-text-secondary)] transition-colors"
-            aria-label="Next slide"
-          >
-            <ChevronRight size={24} />
-          </button>
-        </div>
-      </div>
+      )}
     </Container>
   );
 };

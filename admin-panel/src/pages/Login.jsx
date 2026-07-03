@@ -28,11 +28,11 @@ export const Login = () => {
   const onSubmit = async (data) => {
     setIsSubmitting(true);
     try {
-      await login(data.email, data.password);
+      await login(data);
       toast.success('Successfully logged in');
       navigate('/');
     } catch (error) {
-      toast.error('Failed to log in');
+      toast.error(error.response?.data?.message || 'Failed to log in');
     } finally {
       setIsSubmitting(false);
     }

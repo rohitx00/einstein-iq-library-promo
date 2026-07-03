@@ -1,7 +1,9 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from './Button';
+import { useMutation } from '@tanstack/react-query';
+import api from '../services/api';
 
 export const BookingModal = ({ isOpen, onClose, selectedPlan }) => {
   const [formData, setFormData] = useState({
@@ -9,18 +11,44 @@ export const BookingModal = ({ isOpen, onClose, selectedPlan }) => {
     email: '',
     phone: '',
     plan: selectedPlan || 'Standard',
-    requestType: 'visit' // 'visit' or 'call'
+    requestType: 'visit'
   });
+  
+  useEffect(() => {
+    if (selectedPlan) {
+      setFormData(prev => ({ ...prev, plan: selectedPlan }));
+    }
+  }, [selectedPlan]);
+
   const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const messageMutation = useMutation({
+    mutationFn: (data) => api.post('/messages', {
+      ...data,
+      message: `Booking request for plan: ${data.plan}`,
+    }),
+    onSuccess: () => {
+      setIsSubmitted(true);
+      setTimeout(() => {
+        onClose();
+        setIsSubmitted(false);
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          plan: selectedPlan || 'Standard',
+          requestType: 'visit'
+        });
+      }, 3000);
+    },
+    onError: () => {
+      alert('Failed to send request. Please try again.');
+    }
+  });
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Normally you would send formData to a backend here
-    setIsSubmitted(true);
-    setTimeout(() => {
-      onClose();
-      setIsSubmitted(false);
-    }, 3000);
+    messageMutation.mutate(formData);
   };
 
   return (
@@ -138,8 +166,12 @@ export const BookingModal = ({ isOpen, onClose, selectedPlan }) => {
                     />
                   </div>
 
-                  <Button type="submit" className="w-full mt-4 bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary)]/90 py-4">
-                    Submit Request
+                  <Button 
+                    type="submit" 
+                    disabled={messageMutation.isPending}
+                    className="w-full mt-4 bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary)]/90 py-4"
+                  >
+                    {messageMutation.isPending ? 'Submitting...' : 'Submit Request'}
                   </Button>
                 </form>
               )}

@@ -2,7 +2,7 @@ import prisma from '../models/prismaClient.js';
 
 export const getAllTestimonials = async () => {
   return prisma.testimonial.findMany({
-    orderBy: { displayOrder: 'asc' },
+    orderBy: { createdAt: 'desc' },
   });
 };
 

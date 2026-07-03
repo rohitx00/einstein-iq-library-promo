@@ -4,7 +4,8 @@ import { ChevronDown } from 'lucide-react';
 import { PageTransitionWrapper } from '../components/PageTransitionWrapper';
 import { Container } from '../components/Container';
 import { SectionTitle } from '../components/SectionTitle';
-import { faqs } from '../data/mockData';
+import { useQuery } from '@tanstack/react-query';
+import api from '../services/api';
 import { cn } from '../utils/cn';
 
 const FAQAccordion = ({ question, answer, isOpen, onClick }) => {
@@ -46,6 +47,14 @@ const FAQAccordion = ({ question, answer, isOpen, onClick }) => {
 const FAQ = () => {
   const [openId, setOpenId] = useState(null);
 
+  const { data: faqs = [], isLoading } = useQuery({
+    queryKey: ['faqs'],
+    queryFn: async () => {
+      const response = await api.get('/faqs');
+      return response.data.data;
+    }
+  });
+
   return (
     <PageTransitionWrapper>
       <div className="bg-[var(--color-bg-base)] min-h-screen py-12">
@@ -55,17 +64,24 @@ const FAQ = () => {
             title="Frequently Asked Questions"
             description="Everything you need to know about memberships, facilities, and rules."
           />
-          <div className="max-w-3xl mx-auto mt-8 glass rounded-3xl p-4 md:p-8">
-            {faqs.map((faq) => (
-              <FAQAccordion
-                key={faq.id}
-                question={faq.question}
-                answer={faq.answer}
-                isOpen={openId === faq.id}
-                onClick={() => setOpenId(openId === faq.id ? null : faq.id)}
-              />
-            ))}
-          </div>
+          
+          {isLoading ? (
+            <div className="flex justify-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-primary)]"></div>
+            </div>
+          ) : (
+            <div className="max-w-3xl mx-auto mt-8 glass rounded-3xl p-4 md:p-8">
+              {faqs.map((faq) => (
+                <FAQAccordion
+                  key={faq.id}
+                  question={faq.question}
+                  answer={faq.answer}
+                  isOpen={openId === faq.id}
+                  onClick={() => setOpenId(openId === faq.id ? null : faq.id)}
+                />
+              ))}
+            </div>
+          )}
         </Container>
       </div>
     </PageTransitionWrapper>

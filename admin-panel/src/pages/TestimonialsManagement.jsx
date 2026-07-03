@@ -5,27 +5,69 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'react-hot-toast';
 import { Plus, Edit2, Trash2, Save, X, Star } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-
-const initialTestimonials = [
-  { id: 1, name: 'Sarah Jenkins', occupation: 'Medical Student', rating: 5, review: 'The quiet zones are genuinely silent. Best place to study for boards.', image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330' },
-  { id: 2, name: 'David Chen', occupation: 'Software Engineer', rating: 5, review: 'Incredible internet speeds and very comfortable ergonomic chairs.', image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d' },
-];
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import api from '../services/api';
 
 const testimonialSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   occupation: z.string().min(1, 'Occupation is required'),
   rating: z.number().min(1).max(5),
   review: z.string().min(10, 'Review must be at least 10 characters'),
-  image: z.string().url('Must be a valid image URL').or(z.literal('')),
+  imageUrl: z.string().url('Must be a valid image URL').or(z.literal('')),
 });
 
 export const TestimonialsManagement = () => {
-  const [testimonials, setTestimonials] = useState(initialTestimonials);
+  const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
 
+  const { data: testimonials = [], isLoading } = useQuery({
+    queryKey: ['testimonials'],
+    queryFn: async () => {
+      const response = await api.get('/testimonials');
+      return response.data.data;
+    }
+  });
+
   const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm({
     resolver: zodResolver(testimonialSchema),
+  });
+
+  const createMutation = useMutation({
+    mutationFn: async (data) => {
+      const response = await api.post('/testimonials', data);
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success('Testimonial added successfully');
+      queryClient.invalidateQueries({ queryKey: ['testimonials'] });
+      closeModal();
+    },
+    onError: (error) => toast.error(error.response?.data?.message || 'Failed to add testimonial')
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, data }) => {
+      const response = await api.put(`/testimonials/${id}`, data);
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success('Testimonial updated successfully');
+      queryClient.invalidateQueries({ queryKey: ['testimonials'] });
+      closeModal();
+    },
+    onError: (error) => toast.error(error.response?.data?.message || 'Failed to update testimonial')
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id) => {
+      await api.delete(`/testimonials/${id}`);
+    },
+    onSuccess: () => {
+      toast.success('Testimonial deleted successfully');
+      queryClient.invalidateQueries({ queryKey: ['testimonials'] });
+    },
+    onError: (error) => toast.error(error.response?.data?.message || 'Failed to delete testimonial')
   });
 
   const openModal = (t = null) => {
@@ -35,10 +77,10 @@ export const TestimonialsManagement = () => {
       setValue('occupation', t.occupation);
       setValue('rating', t.rating);
       setValue('review', t.review);
-      setValue('image', t.image);
+      setValue('imageUrl', t.imageUrl || '');
     } else {
       setEditingId(null);
-      reset({ name: '', occupation: '', rating: 5, review: '', image: '' });
+      reset({ name: '', occupation: '', rating: 5, review: '', imageUrl: '' });
     }
     setIsModalOpen(true);
   };
@@ -50,21 +92,27 @@ export const TestimonialsManagement = () => {
 
   const onSubmit = (data) => {
     if (editingId) {
-      setTestimonials(testimonials.map(t => t.id === editingId ? { ...data, id: editingId } : t));
-      toast.success('Testimonial updated');
+      updateMutation.mutate({ id: editingId, data });
     } else {
-      setTestimonials([...testimonials, { ...data, id: Date.now() }]);
-      toast.success('Testimonial added');
+      createMutation.mutate(data);
     }
-    closeModal();
   };
 
   const handleDelete = (id) => {
     if (window.confirm('Are you sure you want to delete this testimonial?')) {
-      setTestimonials(testimonials.filter(t => t.id !== id));
-      toast.success('Testimonial deleted');
+      deleteMutation.mutate(id);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900"></div>
+      </div>
+    );
+  }
+
+  const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
   return (
     <div className="space-y-6">
@@ -85,7 +133,7 @@ export const TestimonialsManagement = () => {
         {testimonials.map((t) => (
           <div key={t.id} className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm flex flex-col h-full">
             <div className="flex items-center gap-4 mb-4">
-              <img src={t.image || 'https://via.placeholder.com/150'} alt={t.name} className="w-12 h-12 rounded-full object-cover" />
+              <img src={t.imageUrl || 'https://via.placeholder.com/150'} alt={t.name} className="w-12 h-12 rounded-full object-cover bg-slate-100" />
               <div>
                 <h3 className="font-bold text-slate-900">{t.name}</h3>
                 <p className="text-xs text-slate-500">{t.occupation}</p>
@@ -102,12 +150,17 @@ export const TestimonialsManagement = () => {
               <button onClick={() => openModal(t)} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded">
                 <Edit2 size={16} />
               </button>
-              <button onClick={() => handleDelete(t.id)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded">
+              <button onClick={() => handleDelete(t.id)} disabled={deleteMutation.isPending} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded disabled:opacity-50">
                 <Trash2 size={16} />
               </button>
             </div>
           </div>
         ))}
+        {testimonials.length === 0 && (
+          <div className="col-span-full py-12 text-center text-slate-500">
+            No testimonials found.
+          </div>
+        )}
       </div>
 
       <AnimatePresence>
@@ -147,15 +200,15 @@ export const TestimonialsManagement = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Profile Image URL</label>
-                  <input {...register('image')} placeholder="https://..." className="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-slate-900" />
-                  {errors.image && <p className="text-red-500 text-xs mt-1">{errors.image.message}</p>}
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Profile Image URL (Optional)</label>
+                  <input {...register('imageUrl')} placeholder="https://..." className="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-slate-900" />
+                  {errors.imageUrl && <p className="text-red-500 text-xs mt-1">{errors.imageUrl.message}</p>}
                 </div>
 
                 <div className="flex justify-end gap-3 pt-4 mt-6 border-t border-slate-100">
                   <button type="button" onClick={closeModal} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg font-medium transition-colors">Cancel</button>
-                  <button type="submit" className="px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 flex items-center gap-2 font-medium transition-colors">
-                    <Save size={16} /> Save Testimonial
+                  <button type="submit" disabled={isSubmitting} className="px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 flex items-center gap-2 font-medium transition-colors disabled:opacity-70">
+                    <Save size={16} /> {isSubmitting ? 'Saving...' : 'Save Testimonial'}
                   </button>
                 </div>
               </form>

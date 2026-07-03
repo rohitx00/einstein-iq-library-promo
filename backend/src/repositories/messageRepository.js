@@ -21,7 +21,7 @@ export const createMessage = async (data) => {
 export const markAsRead = async (id) => {
   return prisma.contactMessage.update({
     where: { id },
-    data: { isRead: true },
+    data: { status: 'read' },
   });
 };
 

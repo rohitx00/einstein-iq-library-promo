@@ -1,23 +1,42 @@
 import { Users, FileImage, MessageSquare, Star, BookOpen, Coffee, HelpCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
-
-const stats = [
-  { label: 'Contact Messages', value: '12', icon: MessageSquare, color: 'text-blue-500', bg: 'bg-blue-100' },
-  { label: 'Gallery Images', value: '24', icon: FileImage, color: 'text-purple-500', bg: 'bg-purple-100' },
-  { label: 'Testimonials', value: '8', icon: Star, color: 'text-yellow-500', bg: 'bg-yellow-100' },
-  { label: 'Membership Plans', value: '3', icon: BookOpen, color: 'text-green-500', bg: 'bg-green-100' },
-  { label: 'Facilities', value: '6', icon: Coffee, color: 'text-orange-500', bg: 'bg-orange-100' },
-  { label: 'FAQs', value: '10', icon: HelpCircle, color: 'text-red-500', bg: 'bg-red-100' },
-];
-
-const recentMessages = [
-  { id: 1, name: 'Alice Smith', email: 'alice@example.com', subject: 'Membership Inquiry', date: '2 hours ago', status: 'Unread' },
-  { id: 2, name: 'Bob Johnson', email: 'bob@example.com', subject: 'Library Tour', date: '5 hours ago', status: 'Read' },
-  { id: 3, name: 'Charlie Brown', email: 'charlie@example.com', subject: 'Pricing Question', date: '1 day ago', status: 'Read' },
-  { id: 4, name: 'Diana Prince', email: 'diana@example.com', subject: 'Corporate Plan', date: '2 days ago', status: 'Read' },
-];
+import { useQuery } from '@tanstack/react-query';
+import api from '../services/api';
 
 export const Dashboard = () => {
+  const { data: dashboardData, isLoading, error } = useQuery({
+    queryKey: ['dashboardStats'],
+    queryFn: async () => {
+      const response = await api.get('/dashboard');
+      return response.data.data;
+    }
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-red-500 bg-red-50 p-4 rounded-xl border border-red-100">
+        Failed to load dashboard data. Please try again.
+      </div>
+    );
+  }
+
+  const stats = [
+    { label: 'Contact Messages', value: dashboardData.messagesCount, icon: MessageSquare, color: 'text-blue-500', bg: 'bg-blue-100' },
+    { label: 'Gallery Images', value: dashboardData.galleryCount, icon: FileImage, color: 'text-purple-500', bg: 'bg-purple-100' },
+    { label: 'Testimonials', value: dashboardData.testimonialsCount, icon: Star, color: 'text-yellow-500', bg: 'bg-yellow-100' },
+    { label: 'Membership Plans', value: dashboardData.plansCount, icon: BookOpen, color: 'text-green-500', bg: 'bg-green-100' },
+    { label: 'Facilities', value: dashboardData.facilitiesCount, icon: Coffee, color: 'text-orange-500', bg: 'bg-orange-100' },
+    { label: 'FAQs', value: dashboardData.faqsCount, icon: HelpCircle, color: 'text-red-500', bg: 'bg-red-100' },
+  ];
+
   return (
     <div className="space-y-6">
       <div>
@@ -50,7 +69,6 @@ export const Dashboard = () => {
       <div className="bg-white border border-slate-200 shadow-sm rounded-2xl overflow-hidden mt-8">
         <div className="px-6 py-5 border-b border-slate-200 flex items-center justify-between">
           <h2 className="text-lg font-bold text-slate-900">Recent Contact Messages</h2>
-          <button className="text-sm font-medium text-blue-600 hover:text-blue-700">View All</button>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-slate-600">
@@ -63,23 +81,33 @@ export const Dashboard = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
-              {recentMessages.map((msg) => (
-                <tr key={msg.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <p className="font-medium text-slate-900">{msg.name}</p>
-                    <p className="text-xs text-slate-500">{msg.email}</p>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap font-medium text-slate-700">{msg.subject}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-slate-500">{msg.date}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                      msg.status === 'Unread' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'
-                    }`}>
-                      {msg.status}
-                    </span>
+              {dashboardData.recentMessages?.length === 0 ? (
+                <tr>
+                  <td colSpan="4" className="px-6 py-8 text-center text-slate-500">
+                    No recent messages.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                dashboardData.recentMessages.map((msg) => (
+                  <tr key={msg.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <p className="font-medium text-slate-900">{msg.name}</p>
+                      <p className="text-xs text-slate-500">{msg.email}</p>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap font-medium text-slate-700">{msg.subject}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-slate-500">
+                      {new Date(msg.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                        !msg.isRead ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'
+                      }`}>
+                        {!msg.isRead ? 'Unread' : 'Read'}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

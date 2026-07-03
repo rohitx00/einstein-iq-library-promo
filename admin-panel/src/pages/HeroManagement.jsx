@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'react-hot-toast';
 import { Save, Image as ImageIcon, Upload } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import api from '../services/api';
 
 const heroSchema = z.object({
   headline: z.string().min(1, 'Headline is required'),
@@ -15,37 +17,63 @@ const heroSchema = z.object({
 });
 
 export const HeroManagement = () => {
-  const [imagePreview, setImagePreview] = useState('https://images.unsplash.com/photo-1507842217343-583bb7270b66');
+  const queryClient = useQueryClient();
+  const [imagePreview, setImagePreview] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
+
+  const { data: heroData, isLoading } = useQuery({
+    queryKey: ['hero'],
+    queryFn: async () => {
+      const response = await api.get('/hero');
+      return response.data.data;
+    }
+  });
   
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
-    resolver: zodResolver(heroSchema),
-    defaultValues: {
-      headline: 'The Premium Space For Deep Focus.',
-      subtitle: 'Elevate your academic and professional journey in an environment designed for absolute concentration and success.',
-      primaryCtaText: 'Explore Memberships',
-      primaryCtaLink: '/membership',
-      secondaryCtaText: 'Discover Our Story',
-      secondaryCtaLink: '/about',
+  const { register, handleSubmit, reset, formState: { errors } } = useForm({
+    resolver: zodResolver(heroSchema)
+  });
+
+  useEffect(() => {
+    if (heroData) {
+      reset(heroData);
+      setImagePreview(heroData.imageUrl);
+    }
+  }, [heroData, reset]);
+
+  const mutation = useMutation({
+    mutationFn: async (formData) => {
+      const response = await api.put('/hero', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success('Hero section updated successfully');
+      queryClient.invalidateQueries({ queryKey: ['hero'] });
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Failed to update hero section');
     }
   });
 
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
+      setImageFile(file);
       const url = URL.createObjectURL(file);
       setImagePreview(url);
     }
   };
 
-  const onSubmit = async (data) => {
-    // Mock API call
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        console.log('Saved Hero Data:', data);
-        toast.success('Hero section updated successfully');
-        resolve();
-      }, 1000);
-    });
+  const onSubmit = (data) => {
+    const formData = new FormData();
+    Object.keys(data).forEach(key => formData.append(key, data[key]));
+    if (imageFile) {
+      formData.append('image', imageFile);
+    }
+    mutation.mutate(formData);
   };
 
   return (
@@ -149,11 +177,11 @@ export const HeroManagement = () => {
           <div className="flex justify-end pt-4">
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={mutation.isPending}
               className="bg-slate-900 text-white px-6 py-2.5 rounded-lg hover:bg-slate-800 transition-colors flex items-center gap-2 font-medium disabled:opacity-70"
             >
               <Save size={18} />
-              {isSubmitting ? 'Saving Changes...' : 'Save Changes'}
+              {mutation.isPending ? 'Saving Changes...' : 'Save Changes'}
             </button>
           </div>
         </form>
