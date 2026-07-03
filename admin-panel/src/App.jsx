@@ -14,14 +14,6 @@ import { MessagesManagement } from './pages/MessagesManagement';
 import { ContactInfoManagement } from './pages/ContactInfoManagement';
 import { SettingsManagement } from './pages/SettingsManagement';
 
-// Placeholder components for routing
-const Placeholder = ({ title }) => (
-  <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
-    <h2 className="text-xl font-bold text-slate-900 mb-4">{title} Management</h2>
-    <p className="text-slate-500">This page is under construction.</p>
-  </div>
-);
-
 const ProtectedRoute = ({ children }) => {
   const { admin, loading } = useAuth();
   const location = useLocation();
