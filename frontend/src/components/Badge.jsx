@@ -5,7 +5,7 @@ export const Badge = ({ children, className }) => {
     <span
       className={cn(
         'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium uppercase tracking-wider',
-        'bg-[#172a45] text-[#f5f5dc] border border-[#2d3748]',
+        'bg-[var(--color-secondary)] text-[var(--color-primary)] border border-[var(--color-border)]',
         className
       )}
     >

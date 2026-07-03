@@ -2,10 +2,10 @@ import { forwardRef } from 'react';
 import { cn } from '../utils/cn';
 
 const variants = {
-  primary: 'bg-[#f5f5dc] text-[#0a192f] hover:bg-[#e8e8d0]',
-  secondary: 'bg-[#2d3748] text-[#f5f5dc] hover:bg-[#4a5568]',
-  outline: 'border-2 border-[#f5f5dc] text-[#f5f5dc] hover:bg-[#f5f5dc] hover:text-[#0a192f]',
-  ghost: 'text-[#a0aec0] hover:text-[#f5f5dc] hover:bg-white/5',
+  primary: 'bg-[var(--color-accent)] text-[var(--color-surface)] hover:bg-[var(--color-accent)]',
+  secondary: 'bg-[var(--color-hover)] text-[var(--color-primary)] hover:bg-[var(--color-border)]',
+  outline: 'border-2 border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-accent)] hover:text-[var(--color-surface)]',
+  ghost: 'text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] hover:bg-white/5',
 };
 
 const sizes = {

@@ -15,7 +15,7 @@ const Home = lazy(() => import('../pages/Home'));
 // Temporary Loading Spinner
 const PageLoader = () => (
   <div className="min-h-[60vh] flex items-center justify-center">
-    <div className="w-12 h-12 border-4 border-[#172a45] border-t-[#f5f5dc] rounded-full animate-spin"></div>
+    <div className="w-12 h-12 border-4 border-[var(--color-secondary)] border-t-[#f5f5dc] rounded-full animate-spin"></div>
   </div>
 );
 

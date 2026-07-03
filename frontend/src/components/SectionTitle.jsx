@@ -24,7 +24,7 @@ export const SectionTitle = ({ badge, title, description, align = 'center', clas
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-100px' }}
         transition={{ delay: 0.1 }}
-        className="text-3xl md:text-5xl font-bold font-heading mb-6 tracking-tight text-[#f5f5dc]"
+        className="text-3xl md:text-5xl font-bold font-heading mb-6 tracking-tight text-[var(--color-primary)]"
       >
         {title}
       </motion.h2>
@@ -34,7 +34,7 @@ export const SectionTitle = ({ badge, title, description, align = 'center', clas
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-100px' }}
           transition={{ delay: 0.2 }}
-          className="text-lg text-[#a0aec0] max-w-2xl"
+          className="text-lg text-[var(--color-text-secondary)] max-w-2xl"
         >
           {description}
         </motion.p>

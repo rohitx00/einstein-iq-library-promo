@@ -13,7 +13,7 @@ export const GalleryCard = ({ url, alt, span, index = 0 }) => {
         span
       )}
     >
-      <div className="absolute inset-0 bg-[#0a192f]/20 group-hover:bg-transparent transition-colors duration-500 z-10" />
+      <div className="absolute inset-0 bg-[var(--color-primary)]/20 group-hover:bg-transparent transition-colors duration-500 z-10" />
       <img
         src={url}
         alt={alt}

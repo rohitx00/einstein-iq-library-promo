@@ -9,11 +9,11 @@ export const TestimonialCard = ({ name, occupation, review, image, rating }) => 
           src={image}
           alt={name}
           loading="lazy"
-          className="w-14 h-14 rounded-full object-cover border-2 border-[#172a45]"
+          className="w-14 h-14 rounded-full object-cover border-2 border-[var(--color-secondary)]"
         />
         <div>
-          <h4 className="font-heading font-bold text-[#f5f5dc]">{name}</h4>
-          <p className="text-sm text-[#a0aec0]">{occupation}</p>
+          <h4 className="font-heading font-bold text-[var(--color-primary)]">{name}</h4>
+          <p className="text-sm text-[var(--color-text-secondary)]">{occupation}</p>
         </div>
       </div>
       <div className="flex gap-1 mb-4">
@@ -21,11 +21,11 @@ export const TestimonialCard = ({ name, occupation, review, image, rating }) => 
           <Star
             key={i}
             size={16}
-            className={i < rating ? 'fill-[#f5f5dc] text-[#f5f5dc]' : 'text-[#2d3748]'}
+            className={i < rating ? 'fill-[var(--color-accent)] text-[var(--color-primary)]' : 'text-[var(--color-border)]'}
           />
         ))}
       </div>
-      <p className="text-[#a0aec0] leading-relaxed italic flex-grow">"{review}"</p>
+      <p className="text-[var(--color-text-secondary)] leading-relaxed italic flex-grow">"{review}"</p>
     </div>
   );
 };

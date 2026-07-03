@@ -1,7 +1,7 @@
 export const MapCard = ({ address }) => {
   return (
     <div className="w-full h-[400px] rounded-3xl overflow-hidden glass p-2 relative group">
-      <div className="absolute inset-0 bg-[#0a192f]/40 group-hover:bg-[#0a192f]/20 transition-colors z-10 pointer-events-none rounded-3xl" />
+      <div className="absolute inset-0 bg-[var(--color-primary)]/40 group-hover:bg-[var(--color-primary)]/20 transition-colors z-10 pointer-events-none rounded-3xl" />
       <iframe
         title="Location Map"
         width="100%"
