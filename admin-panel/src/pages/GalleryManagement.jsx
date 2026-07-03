@@ -28,9 +28,7 @@ export const GalleryManagement = () => {
       });
       return response.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['gallery'] });
-    },
+    // Removed onSuccess invalidation here to prevent spamming GET requests during loop
     onError: (error) => toast.error(error.response?.data?.message || 'Failed to upload image')
   });
 
@@ -76,6 +74,8 @@ export const GalleryManagement = () => {
     setIsUploading(false);
     if (successCount > 0) {
       toast.success(`${successCount} image(s) uploaded successfully`);
+      // Invalidate query ONCE after all uploads are complete
+      queryClient.invalidateQueries({ queryKey: ['gallery'] });
     }
     // reset file input
     e.target.value = '';
@@ -122,15 +122,16 @@ export const GalleryManagement = () => {
           <div key={img.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden group">
             <div className="aspect-[4/3] relative overflow-hidden bg-slate-100">
               <img src={img.imageUrl} alt={img.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-              <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <button 
-                  onClick={() => handleDelete(img.id)}
-                  disabled={deleteMutation.isPending}
-                  className="bg-white text-red-600 p-2 rounded-full hover:bg-red-50 transition-colors shadow-lg disabled:opacity-50"
-                >
-                  <Trash2 size={20} />
-                </button>
-              </div>
+              
+              {/* Always visible delete button in top-right */}
+              <button 
+                onClick={() => handleDelete(img.id)}
+                disabled={deleteMutation.isPending}
+                className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm text-red-600 p-2 rounded-full hover:bg-red-50 hover:text-red-700 transition-colors shadow-md disabled:opacity-50 z-10"
+                title="Delete image"
+              >
+                <Trash2 size={16} />
+              </button>
             </div>
             <div className="p-4">
               <input 

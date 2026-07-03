@@ -6,6 +6,7 @@ import Layout from '../layout/Layout';
 // Lazy load pages for performance
 const Home = lazy(() => import('../pages/Home'));
 const About = lazy(() => import('../pages/About'));
+const Features = lazy(() => import('../pages/Features'));
 const Membership = lazy(() => import('../pages/Membership'));
 const Gallery = lazy(() => import('../pages/Gallery'));
 const Rules = lazy(() => import('../pages/Rules'));
@@ -30,6 +31,7 @@ const AppRoutes = () => {
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
             <Route path="about" element={<About />} />
+            <Route path="features" element={<Features />} />
             <Route path="membership" element={<Membership />} />
             <Route path="gallery" element={<Gallery />} />
             <Route path="rules" element={<Rules />} />

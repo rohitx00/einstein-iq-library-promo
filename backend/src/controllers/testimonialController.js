@@ -13,12 +13,12 @@ export const getTestimonialById = asyncHandler(async (req, res) => {
 });
 
 export const createTestimonial = asyncHandler(async (req, res) => {
-  const testimonial = await testimonialService.createTestimonial(req.body);
+  const testimonial = await testimonialService.createTestimonial(req.body, req.file);
   sendSuccess(res, 201, 'Testimonial created successfully', testimonial);
 });
 
 export const updateTestimonial = asyncHandler(async (req, res) => {
-  const testimonial = await testimonialService.updateTestimonial(req.params.id, req.body);
+  const testimonial = await testimonialService.updateTestimonial(req.params.id, req.body, req.file);
   sendSuccess(res, 200, 'Testimonial updated successfully', testimonial);
 });
 

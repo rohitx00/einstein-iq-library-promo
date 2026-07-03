@@ -11,3 +11,10 @@ export const findAdminById = async (id) => {
     where: { id },
   });
 };
+
+export const updateAdmin = async (id, data) => {
+  return prisma.admin.update({
+    where: { id },
+    data,
+  });
+};

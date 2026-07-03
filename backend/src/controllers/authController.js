@@ -10,7 +10,7 @@ export const login = asyncHandler(async (req, res) => {
   res.cookie('jwt', result.token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    sameSite: 'lax',
     maxAge: 24 * 60 * 60 * 1000, // 1 day
   });
 
@@ -30,4 +30,18 @@ export const getMe = asyncHandler(async (req, res) => {
   sendSuccess(res, 200, 'Admin data retrieved successfully', {
     admin: req.admin,
   });
+});
+
+export const updateProfile = asyncHandler(async (req, res) => {
+  const { name, email } = req.body;
+  const adminId = req.admin.id;
+  const updatedAdmin = await authService.updateProfile(adminId, name, email);
+  sendSuccess(res, 200, 'Profile updated successfully', { admin: updatedAdmin });
+});
+
+export const changePassword = asyncHandler(async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  const adminId = req.admin.id;
+  await authService.changePassword(adminId, currentPassword, newPassword);
+  sendSuccess(res, 200, 'Password changed successfully');
 });

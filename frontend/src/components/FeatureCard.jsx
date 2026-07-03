@@ -1,18 +1,17 @@
 import { motion } from 'framer-motion';
-import { Wind, Wifi, Shield, Coffee, Clock, Lock, MapPin } from 'lucide-react';
-
-const iconMap = {
-  wind: Wind,
-  wifi: Wifi,
-  shield: Shield,
-  coffee: Coffee,
-  clock: Clock,
-  lock: Lock,
-  'map-pin': MapPin,
-};
+import * as Icons from 'lucide-react';
 
 export const FeatureCard = ({ title, description, icon, delay = 0 }) => {
-  const IconComponent = iconMap[icon] || Wind;
+  const getIconName = (name) => {
+    if (!name) return 'Star'; // Default icon
+    return name
+      .split('-')
+      .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+      .join('');
+  };
+  
+  const iconName = getIconName(icon);
+  const IconComponent = Icons[iconName] || Icons.Star;
 
   return (
     <motion.div

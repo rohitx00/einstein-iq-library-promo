@@ -15,7 +15,7 @@ const Contact = () => {
   const { data: contactInfo, isLoading } = useQuery({
     queryKey: ['contactInfo'],
     queryFn: async () => {
-      const response = await api.get('/contact-info');
+      const response = await api.get('/contact');
       return response.data.data;
     }
   });

@@ -12,7 +12,7 @@ export const AuthProvider = ({ children }) => {
     const checkAuth = async () => {
       try {
         const { data } = await api.get('/auth/me');
-        setAdmin(data.data);
+        setAdmin(data.data?.admin || data.data);
       } catch (error) {
         setAdmin(null);
       } finally {
@@ -31,7 +31,10 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (credentials) => {
     const { data } = await api.post('/auth/login', credentials);
-    setAdmin(data.data);
+    if (data.data?.token) {
+      localStorage.setItem('adminToken', data.data.token);
+    }
+    setAdmin(data.data?.admin || data.data);
     return data;
   };
 
@@ -39,12 +42,13 @@ export const AuthProvider = ({ children }) => {
     try {
       await api.post('/auth/logout');
     } finally {
+      localStorage.removeItem('adminToken');
       setAdmin(null);
     }
   };
 
   return (
-    <AuthContext.Provider value={{ admin, loading, login, logout }}>
+    <AuthContext.Provider value={{ admin, setAdmin, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

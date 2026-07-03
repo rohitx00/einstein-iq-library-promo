@@ -10,8 +10,9 @@ router.get('/', testimonialController.getAllTestimonials);
 router.get('/:id', testimonialController.getTestimonialById);
 
 // Protected routes (Admin only)
-router.post('/', protect, validate(testimonialSchema), testimonialController.createTestimonial);
-router.put('/:id', protect, validate(testimonialUpdateSchema), testimonialController.updateTestimonial);
+import { upload } from '../middlewares/multerConfig.js';
+router.post('/', protect, upload.single('image'), validate(testimonialSchema), testimonialController.createTestimonial);
+router.put('/:id', protect, upload.single('image'), validate(testimonialUpdateSchema), testimonialController.updateTestimonial);
 router.delete('/:id', protect, testimonialController.deleteTestimonial);
 
 export default router;

@@ -1,6 +1,13 @@
 import { Menu, Bell, Search } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export const Header = ({ onMenuClick }) => {
+  const { admin } = useAuth();
+  const getInitials = (name) => {
+    if (!name) return 'A';
+    return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+  };
+
   return (
     <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 lg:px-8 z-30">
       <div className="flex items-center gap-4">
@@ -28,11 +35,11 @@ export const Header = ({ onMenuClick }) => {
         </button>
         <div className="flex items-center gap-3 pl-4 border-l border-slate-200">
           <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-sm">
-            AD
+            {getInitials(admin?.name)}
           </div>
           <div className="hidden sm:block">
-            <p className="text-sm font-medium text-slate-900 leading-none">Admin User</p>
-            <p className="text-xs text-slate-500 mt-1">admin@einstein.com</p>
+            <p className="text-sm font-medium text-slate-900 leading-none">{admin?.name || 'Admin'}</p>
+            <p className="text-xs text-slate-500 mt-1">{admin?.email || 'admin@einstein.com'}</p>
           </div>
         </div>
       </div>

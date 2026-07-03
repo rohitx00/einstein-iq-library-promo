@@ -4,7 +4,7 @@ import { FeatureCard } from '../components/FeatureCard';
 import { useQuery } from '@tanstack/react-query';
 import api from '../services/api';
 
-export const FeaturesSection = () => {
+export const FeaturesSection = ({ limit }) => {
   const { data: features = [], isLoading } = useQuery({
     queryKey: ['facilities'],
     queryFn: async () => {
@@ -26,8 +26,8 @@ export const FeaturesSection = () => {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-primary)]"></div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {features.map((feature, index) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {features.slice(0, limit || features.length).map((feature, index) => (
             <FeatureCard 
               key={feature.id}
               title={feature.title}

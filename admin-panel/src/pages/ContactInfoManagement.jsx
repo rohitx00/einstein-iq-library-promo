@@ -24,7 +24,7 @@ export const ContactInfoManagement = () => {
   const { data: contactInfo, isLoading } = useQuery({
     queryKey: ['contactInfo'],
     queryFn: async () => {
-      const response = await api.get('/contact-info');
+      const response = await api.get('/contact');
       return response.data.data;
     }
   });
@@ -50,7 +50,7 @@ export const ContactInfoManagement = () => {
 
   const mutation = useMutation({
     mutationFn: async (data) => {
-      const response = await api.put('/contact-info', data);
+      const response = await api.put('/contact', data);
       return response.data;
     },
     onSuccess: () => {

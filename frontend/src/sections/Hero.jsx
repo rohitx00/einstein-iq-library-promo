@@ -5,28 +5,17 @@ import gsap from 'gsap';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Container } from '../components/Container';
-import { useQuery } from '@tanstack/react-query';
-import api from '../services/api';
 import defaultHeroImage from '../assets/hero.png';
 
 export const Hero = () => {
   const containerRef = useRef(null);
   const textRef = useRef(null);
-  
-  const { data: heroData, isLoading } = useQuery({
-    queryKey: ['hero'],
-    queryFn: async () => {
-      const response = await api.get('/hero');
-      return response.data.data;
-    }
-  });
 
   const { scrollY } = useScroll();
   const y = useTransform(scrollY, [0, 1000], [0, 400]);
   const opacity = useTransform(scrollY, [0, 600], [1, 0]);
 
   useEffect(() => {
-    if (isLoading) return;
     // GSAP Animation for complex reveal
     const ctx = gsap.context(() => {
       gsap.from('.hero-word', {
@@ -40,12 +29,11 @@ export const Hero = () => {
     }, containerRef);
 
     return () => ctx.revert();
-  }, [isLoading, heroData]);
+  }, []);
 
   const renderHeading = (heading) => {
     if (!heading) return null;
     const words = heading.split(' ');
-    // Split into roughly two lines
     const mid = Math.ceil(words.length / 2);
     const line1 = words.slice(0, mid);
     const line2 = words.slice(mid);
@@ -66,9 +54,9 @@ export const Hero = () => {
     );
   };
 
-  const bgImage = heroData?.backgroundImage || defaultHeroImage;
-  const headingText = heroData?.heading || "The Premium Space For Deep Focus.";
-  const subheadingText = heroData?.subheading || "Elevate your academic and professional journey in a silent, air-conditioned environment designed for unparalleled productivity.";
+  const bgImage = defaultHeroImage;
+  const headingText = "The Premium Space For Deep Focus.";
+  const subheadingText = "Elevate your academic and professional journey in an environment designed for absolute concentration and success.";
 
   return (
     <section ref={containerRef} className="relative h-[100dvh] w-full flex items-center justify-center overflow-hidden bg-[var(--color-primary)]">

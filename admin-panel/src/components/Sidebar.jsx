@@ -21,7 +21,6 @@ export const cn = (...inputs) => twMerge(clsx(inputs));
 
 const navItems = [
   { label: 'Dashboard', icon: LayoutDashboard, path: '/' },
-  { label: 'Hero Section', icon: Image, path: '/hero' },
   { label: 'About', icon: Info, path: '/about' },
   { label: 'Facilities', icon: Coffee, path: '/facilities' },
   { label: 'Membership Plans', icon: BookOpen, path: '/plans' },

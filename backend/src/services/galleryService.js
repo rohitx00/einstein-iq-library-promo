@@ -25,7 +25,8 @@ export const addImage = async (data, file) => {
   const result = await uploadToCloudinary(file.buffer, 'einstein_library/gallery');
 
   return galleryRepository.addImage({
-    caption: data.caption,
+    title: data.title || 'Untitled',
+    category: data.category || 'Uncategorized',
     imageUrl: result.secure_url,
     imagePublicId: result.public_id,
   });
@@ -33,7 +34,9 @@ export const addImage = async (data, file) => {
 
 export const updateImage = async (id, data, file) => {
   const currentImage = await getImageById(id);
-  let updateData = { caption: data.caption };
+  let updateData = {};
+  if (data.title) updateData.title = data.title;
+  if (data.category) updateData.category = data.category;
 
   if (file) {
     const result = await uploadToCloudinary(file.buffer, 'einstein_library/gallery');

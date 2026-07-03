@@ -10,7 +10,7 @@ const Home = () => {
     <PageTransitionWrapper>
       <div className="flex flex-col w-full">
         <Hero />
-        <FeaturesSection />
+        <FeaturesSection limit={6} />
         <StatisticsSection />
         <TestimonialsSection />
         <CTASection />

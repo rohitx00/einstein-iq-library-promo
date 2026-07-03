@@ -5,6 +5,15 @@ const api = axios.create({
   withCredentials: true, // Crucial for sending/receiving HTTP-only cookies
 });
 
+// Interceptor to attach Bearer token
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('adminToken');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 // Interceptor to handle 401 Unauthorized responses globally
 api.interceptors.response.use(
   (response) => response,

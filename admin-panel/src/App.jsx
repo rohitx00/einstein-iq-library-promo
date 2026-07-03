@@ -3,7 +3,6 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { AdminLayout } from './layouts/AdminLayout';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
-import { HeroManagement } from './pages/HeroManagement';
 import { AboutManagement } from './pages/AboutManagement';
 import { FacilitiesManagement } from './pages/FacilitiesManagement';
 import { PlansManagement } from './pages/PlansManagement';
@@ -13,6 +12,7 @@ import { RulesManagement } from './pages/RulesManagement';
 import { FaqsManagement } from './pages/FaqsManagement';
 import { MessagesManagement } from './pages/MessagesManagement';
 import { ContactInfoManagement } from './pages/ContactInfoManagement';
+import { SettingsManagement } from './pages/SettingsManagement';
 
 // Placeholder components for routing
 const Placeholder = ({ title }) => (
@@ -50,7 +50,6 @@ function App() {
           
           <Route path="/" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
             <Route index element={<Dashboard />} />
-            <Route path="hero" element={<HeroManagement />} />
             <Route path="about" element={<AboutManagement />} />
             <Route path="facilities" element={<FacilitiesManagement />} />
             <Route path="plans" element={<PlansManagement />} />
@@ -60,7 +59,7 @@ function App() {
             <Route path="faqs" element={<FaqsManagement />} />
             <Route path="contact-info" element={<ContactInfoManagement />} />
             <Route path="messages" element={<MessagesManagement />} />
-            <Route path="settings" element={<Placeholder title="Settings" />} />
+            <Route path="settings" element={<SettingsManagement />} />
           </Route>
           
           <Route path="*" element={<Navigate to="/" replace />} />

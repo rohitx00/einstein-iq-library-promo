@@ -13,7 +13,6 @@ const testimonialSchema = z.object({
   occupation: z.string().min(1, 'Occupation is required'),
   rating: z.number().min(1).max(5),
   review: z.string().min(10, 'Review must be at least 10 characters'),
-  imageUrl: z.string().url('Must be a valid image URL').or(z.literal('')),
 });
 
 export const TestimonialsManagement = () => {
@@ -35,7 +34,9 @@ export const TestimonialsManagement = () => {
 
   const createMutation = useMutation({
     mutationFn: async (data) => {
-      const response = await api.post('/testimonials', data);
+      const response = await api.post('/testimonials', data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
       return response.data;
     },
     onSuccess: () => {
@@ -48,7 +49,9 @@ export const TestimonialsManagement = () => {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }) => {
-      const response = await api.put(`/testimonials/${id}`, data);
+      const response = await api.put(`/testimonials/${id}`, data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
       return response.data;
     },
     onSuccess: () => {
@@ -80,7 +83,7 @@ export const TestimonialsManagement = () => {
       setValue('imageUrl', t.imageUrl || '');
     } else {
       setEditingId(null);
-      reset({ name: '', occupation: '', rating: 5, review: '', imageUrl: '' });
+      reset({ name: '', occupation: '', rating: 5, review: '' });
     }
     setIsModalOpen(true);
   };
@@ -88,13 +91,26 @@ export const TestimonialsManagement = () => {
   const closeModal = () => {
     setIsModalOpen(false);
     reset();
+    const fileInput = document.getElementById('testimonial-image');
+    if (fileInput) fileInput.value = '';
   };
 
   const onSubmit = (data) => {
+    const formData = new FormData();
+    formData.append('name', data.name);
+    formData.append('occupation', data.occupation);
+    formData.append('rating', data.rating);
+    formData.append('review', data.review);
+    
+    const fileInput = document.getElementById('testimonial-image');
+    if (fileInput && fileInput.files[0]) {
+      formData.append('image', fileInput.files[0]);
+    }
+
     if (editingId) {
-      updateMutation.mutate({ id: editingId, data });
+      updateMutation.mutate({ id: editingId, data: formData });
     } else {
-      createMutation.mutate(data);
+      createMutation.mutate(formData);
     }
   };
 
@@ -200,9 +216,9 @@ export const TestimonialsManagement = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Profile Image URL (Optional)</label>
-                  <input {...register('imageUrl')} placeholder="https://..." className="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-slate-900" />
-                  {errors.imageUrl && <p className="text-red-500 text-xs mt-1">{errors.imageUrl.message}</p>}
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Profile Photo (Optional)</label>
+                  <input id="testimonial-image" type="file" accept="image/*" className="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-slate-900 bg-white" />
+                  <p className="text-xs text-slate-500 mt-1">Leave empty to keep existing image</p>
                 </div>
 
                 <div className="flex justify-end gap-3 pt-4 mt-6 border-t border-slate-100">

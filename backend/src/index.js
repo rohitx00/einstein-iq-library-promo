@@ -6,7 +6,6 @@ import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import { errorHandler, notFoundHandler } from './middlewares/errorHandler.js';
 import authRoutes from './routes/authRoutes.js';
-import heroRoutes from './routes/heroRoutes.js';
 
 import aboutRoutes from './routes/aboutRoutes.js';
 import facilityRoutes from './routes/facilityRoutes.js';
@@ -49,7 +48,6 @@ app.get('/api/health', (req, res) => {
 
 // Routes will be mounted here
 app.use('/api/v1/auth', authRoutes);
-app.use('/api/v1/hero', heroRoutes);
 app.use('/api/v1/about', aboutRoutes);
 app.use('/api/v1/facilities', facilityRoutes);
 app.use('/api/v1/plans', planRoutes);
@@ -65,6 +63,22 @@ app.use('/api/v1/dashboard', dashboardRoutes);
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
+import prisma from './models/prismaClient.js';
+
+// Graceful shutdown to prevent database connection exhaustion during nodemon restarts
+const gracefulShutdown = async () => {
+  console.log('Shutting down gracefully, closing database connections...');
+  await prisma.$disconnect();
+  server.close(() => {
+    console.log('Server closed.');
+    process.exit(0);
+  });
+};
+
+process.on('SIGINT', gracefulShutdown);
+process.on('SIGTERM', gracefulShutdown);
+process.on('SIGUSR2', gracefulShutdown); // For nodemon restarts
