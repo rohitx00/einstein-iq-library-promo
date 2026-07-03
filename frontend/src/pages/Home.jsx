@@ -3,6 +3,7 @@ import { Hero } from '../sections/Hero';
 import { FeaturesSection } from '../sections/FeaturesSection';
 import { StatisticsSection } from '../sections/StatisticsSection';
 import { TestimonialsSection } from '../sections/TestimonialsSection';
+import { CTASection } from '../sections/CTASection';
 
 const Home = () => {
   return (
@@ -12,6 +13,7 @@ const Home = () => {
         <FeaturesSection />
         <StatisticsSection />
         <TestimonialsSection />
+        <CTASection />
       </div>
     </PageTransitionWrapper>
   );

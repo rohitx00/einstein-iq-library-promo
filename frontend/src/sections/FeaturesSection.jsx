@@ -5,7 +5,7 @@ import { features } from '../data/mockData';
 
 export const FeaturesSection = () => {
   return (
-    <Container id="features" className="bg-[var(--color-bg-base)]">
+    <Container id="features" className="bg-white">
       <SectionTitle 
         badge="Premium Amenities"
         title="Everything You Need to Succeed"

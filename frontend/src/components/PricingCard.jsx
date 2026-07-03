@@ -4,7 +4,7 @@ import { Button } from './Button';
 import { cn } from '../utils/cn';
 import { Badge } from './Badge';
 
-export const PricingCard = ({ name, price, duration, features, recommended, delay = 0 }) => {
+export const PricingCard = ({ name, price, duration, features, recommended, delay = 0, onSelectPlan }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -43,6 +43,7 @@ export const PricingCard = ({ name, price, duration, features, recommended, dela
       <Button 
         variant={recommended ? 'primary' : 'outline'} 
         className="w-full"
+        onClick={() => onSelectPlan && onSelectPlan(name)}
       >
         Choose Plan
       </Button>

@@ -4,8 +4,8 @@ export const Badge = ({ children, className }) => {
   return (
     <span
       className={cn(
-        'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium uppercase tracking-wider',
-        'bg-[var(--color-secondary)] text-[var(--color-primary)] border border-[var(--color-border)]',
+        'inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider',
+        'bg-white text-black border border-gray-200 shadow-sm',
         className
       )}
     >
