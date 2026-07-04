@@ -31,7 +31,7 @@ const Navbar = () => {
             <BookOpen size={24} />
           </div>
           <span className="font-heading font-bold text-xl tracking-wide text-[var(--color-primary)]">
-            Einstein IQ
+            Einstein IQ Library
           </span>
         </NavLink>
 
