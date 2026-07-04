@@ -94,15 +94,15 @@ export const Dashboard = () => {
                       <p className="font-medium text-slate-900">{msg.name}</p>
                       <p className="text-xs text-slate-500">{msg.email}</p>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap font-medium text-slate-700">{msg.subject}</td>
+                    <td className="px-6 py-4 whitespace-nowrap font-medium text-slate-700 capitalize">{msg.requestType}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-slate-500">
                       {new Date(msg.createdAt).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                        !msg.isRead ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'
+                        msg.status === 'unread' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'
                       }`}>
-                        {!msg.isRead ? 'Unread' : 'Read'}
+                        {msg.status === 'unread' ? 'Unread' : 'Read'}
                       </span>
                     </td>
                   </tr>

@@ -17,9 +17,10 @@ export const createMessage = asyncHandler(async (req, res) => {
   sendSuccess(res, 201, 'Message sent successfully', message);
 });
 
-export const markAsRead = asyncHandler(async (req, res) => {
-  const message = await messageService.markAsRead(req.params.id);
-  sendSuccess(res, 200, 'Message marked as read', message);
+export const updateMessageStatus = asyncHandler(async (req, res) => {
+  const { status } = req.body;
+  const message = await messageService.updateMessageStatus(req.params.id, status);
+  sendSuccess(res, 200, `Message marked as ${status}`, message);
 });
 
 export const deleteMessage = asyncHandler(async (req, res) => {

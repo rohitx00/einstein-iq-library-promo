@@ -18,9 +18,9 @@ export const createMessage = async (data) => {
   return messageRepository.createMessage(data);
 };
 
-export const markAsRead = async (id) => {
+export const updateMessageStatus = async (id, status) => {
   await getMessageById(id);
-  return messageRepository.markAsRead(id);
+  return messageRepository.updateMessageStatus(id, status);
 };
 
 export const deleteMessage = async (id) => {

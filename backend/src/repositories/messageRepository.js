@@ -18,10 +18,10 @@ export const createMessage = async (data) => {
   });
 };
 
-export const markAsRead = async (id) => {
+export const updateMessageStatus = async (id, status) => {
   return prisma.contactMessage.update({
     where: { id },
-    data: { status: 'read' },
+    data: { status },
   });
 };
 

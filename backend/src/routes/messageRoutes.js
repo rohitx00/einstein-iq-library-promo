@@ -12,7 +12,7 @@ router.post('/', validate(messageSchema), messageController.createMessage);
 // Protected routes (Admin managing messages)
 router.get('/', protect, messageController.getAllMessages);
 router.get('/:id', protect, messageController.getMessageById);
-router.patch('/:id/read', protect, messageController.markAsRead);
+router.put('/:id', protect, messageController.updateMessageStatus);
 router.delete('/:id', protect, messageController.deleteMessage);
 
 export default router;
